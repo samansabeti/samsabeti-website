@@ -122,6 +122,74 @@
     });
   }
 
+  /* ---------- PostHog engagement tracking ---------- */
+  function capture(eventName, properties) {
+    if (window.posthog && typeof window.posthog.capture === "function") {
+      window.posthog.capture(eventName, properties || {});
+    }
+  }
+
+  /* Track the first meaningful view of each main section. */
+  if ("IntersectionObserver" in window) {
+    var sectionObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        capture("section_viewed", {
+          section: entry.target.id,
+          section_label: entry.target.querySelector(".sec-label") ?
+            entry.target.querySelector(".sec-label").textContent.trim() : entry.target.id
+        });
+        sectionObserver.unobserve(entry.target);
+      });
+    }, { threshold: 0.35 });
+    ["about", "work", "contact"].forEach(function (id) {
+      var section = document.getElementById(id);
+      if (section) sectionObserver.observe(section);
+    });
+  }
+
+  /* Track maximum scroll depth once at each threshold per page load. */
+  var reachedDepths = {};
+  function trackScrollDepth() {
+    var doc = document.documentElement;
+    var scrollable = Math.max(doc.scrollHeight - window.innerHeight, 1);
+    var depth = Math.min(100, Math.round((window.scrollY / scrollable) * 100));
+    [25, 50, 75, 100].forEach(function (threshold) {
+      if (depth >= threshold && !reachedDepths[threshold]) {
+        reachedDepths[threshold] = true;
+        capture("scroll_depth", { depth_percent: threshold });
+      }
+    });
+  }
+  window.addEventListener("scroll", trackScrollDepth, { passive: true });
+  window.addEventListener("load", trackScrollDepth);
+
+  /* Track high-intent navigation and outbound clicks with readable labels. */
+  document.addEventListener("click", function (ev) {
+    var link = ev.target.closest("a");
+    if (!link) return;
+    var label = (link.textContent || link.getAttribute("aria-label") || "").trim();
+    var destination = link.getAttribute("href") || "";
+
+    if (link.closest("#nav")) {
+      capture("global_nav_clicked", {
+        label: label,
+        destination: destination.replace(/^index\.html/, "") || "#top"
+      });
+    }
+
+    if (/^https?:\/\//i.test(destination)) {
+      var outboundUrl = new URL(destination, window.location.href);
+      if (outboundUrl.hostname !== window.location.hostname) {
+        capture("outbound_link_clicked", {
+          label: label,
+          destination: outboundUrl.href,
+          destination_host: outboundUrl.hostname
+        });
+      }
+    }
+  });
+
   /* ---------- timeline trail: draws itself as you scroll ---------- */
   var tl = document.getElementById("timeline");
   var svg = document.getElementById("trail-svg");
