@@ -304,7 +304,7 @@
           </div>
           <div class="book__action">
             <span>Free</span>
-            <a href="#" aria-label="Book a free 15 minute fit call">Book a call <span aria-hidden="true">↗</span></a>
+            <a href="#booking-demo" data-booking="fit" aria-label="Book a free 15 minute fit call">Book a call <span aria-hidden="true">↗</span></a>
           </div>
         </article>
 
@@ -312,16 +312,87 @@
           <div class="book__duration">60 minutes</div>
           <div class="book__copy">
             <h3>Working session</h3>
-            <p>One focused hour on pricing, onboarding, growth, or another product decision. The fee is credited toward an engagement.</p>
+            <p>Come with one decision you need to make. We’ll work through the context, pressure-test the options, and leave with a clear next move.</p>
+            <ul class="book__topics">
+              <li>Pricing, packaging, and monetization</li>
+              <li>Onboarding, conversion, and retention</li>
+              <li>Growth strategy and experiment design</li>
+            </ul>
+            <p class="book__proof">Built from seven years scaling consumer products, including growing AllTrails from $10M to $100M ARR.</p>
           </div>
           <div class="book__action">
             <span>$500</span>
-            <a href="#" aria-label="Book a 60 minute working session for $500">Book a session <span aria-hidden="true">↗</span></a>
+            <a href="#booking-demo" data-booking="session" aria-label="Book a 60 minute working session for $500">Book a session <span aria-hidden="true">↗</span></a>
           </div>
         </article>
       </div>
     </div>
   </section>
+
+  <div class="booking-demo" id="booking-demo" aria-hidden="true">
+    <div class="booking-demo__scrim" data-close-booking></div>
+    <section class="booking-demo__panel" role="dialog" aria-modal="true" aria-labelledby="booking-title">
+      <button class="booking-demo__close" type="button" aria-label="Close booking demo" data-close-booking>Close</button>
+      <div class="booking-demo__progress" aria-label="Booking progress">
+        <span class="is-current">Time</span><span>Details</span><span>Payment</span><span>Done</span>
+      </div>
+
+      <div class="booking-step is-active" data-step="0">
+        <p class="booking-demo__eyebrow">60-minute working session · $500</p>
+        <h2 id="booking-title">Choose a time</h2>
+        <p class="booking-demo__note">Pacific time · Times shown are a demo</p>
+        <div class="booking-calendar">
+          <div class="booking-days" aria-label="Demo dates">
+            <button type="button"><span>Tue</span><strong>22</strong></button>
+            <button type="button" class="is-selected"><span>Wed</span><strong>23</strong></button>
+            <button type="button"><span>Thu</span><strong>24</strong></button>
+            <button type="button"><span>Fri</span><strong>25</strong></button>
+          </div>
+          <div class="booking-times" aria-label="Demo times">
+            <button type="button">9:30 AM</button><button type="button" class="is-selected">11:00 AM</button><button type="button">1:30 PM</button><button type="button">3:00 PM</button>
+          </div>
+        </div>
+        <button class="booking-next" type="button" data-next>Continue</button>
+      </div>
+
+      <div class="booking-step" data-step="1">
+        <p class="booking-demo__eyebrow">Wednesday, September 23 · 11:00 AM</p>
+        <h2>A little context</h2>
+        <p class="booking-demo__note">This lets us spend the hour working, not getting up to speed.</p>
+        <form class="booking-form" onsubmit="return false">
+          <label>Name<input type="text" value="Alex Kim"></label>
+          <label>Email<input type="email" value="alex@company.com"></label>
+          <label>Product or company URL<input type="url" value="https://example.com"></label>
+          <label>What decision or question should we work through?<textarea rows="3">We need to decide whether to raise our annual price or change packaging first.</textarea></label>
+          <label>What would make the session useful?<textarea rows="3">A clear recommendation and the first two tests to run.</textarea></label>
+        </form>
+        <div class="booking-nav"><button type="button" data-back>Back</button><button class="booking-next" type="button" data-next>Continue to payment</button></div>
+      </div>
+
+      <div class="booking-step" data-step="2">
+        <p class="booking-demo__eyebrow">Wednesday, September 23 · 11:00 AM</p>
+        <h2>Confirm and pay</h2>
+        <div class="booking-summary">
+          <div><span>Working session</span><strong>$500</strong></div>
+          <p>60 minutes on Google Meet. Credited in full if we start an engagement together.</p>
+        </div>
+        <div class="payment-demo">
+          <label>Card information<div class="payment-demo__field">4242 4242 4242 4242 <span>09/29&nbsp;&nbsp;123</span></div></label>
+          <p>Demo only. No payment will be taken.</p>
+        </div>
+        <div class="booking-nav"><button type="button" data-back>Back</button><button class="booking-next" type="button" data-next>Book session · $500</button></div>
+      </div>
+
+      <div class="booking-step booking-step--done" data-step="3">
+        <div class="booking-check">✓</div>
+        <p class="booking-demo__eyebrow">You’re booked</p>
+        <h2>Wednesday, September 23<br>11:00 AM–12:00 PM PT</h2>
+        <p>A calendar invite and Google Meet link would be sent to alex@company.com.</p>
+        <div class="booking-confirmation"><span>Working session</span><strong>Paid · $500</strong></div>
+        <button class="booking-next" type="button" data-close-booking>Done</button>
+      </div>
+    </section>
+  </div>
 
   <!-- ====== 03 Contact ====== -->
   <footer class="footer" id="contact">
