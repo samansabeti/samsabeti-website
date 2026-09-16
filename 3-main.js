@@ -107,7 +107,18 @@
       }).then(function (res) {
         if (res.ok) {
           if (window.posthog) {
-            window.posthog.capture('contact_form_submitted');
+            /* Link the submission to this visitor's profile: merges their anonymous
+               session (source, sections viewed, device) into a person keyed by email. */
+            var cfEmail = (data.get("email") || "").trim();
+            var cfName = (data.get("name") || "").trim();
+            if (cfEmail && typeof window.posthog.identify === "function") {
+              window.posthog.identify(cfEmail, { email: cfEmail, name: cfName });
+            }
+            window.posthog.capture('contact_form_submitted', {
+              name: cfName,
+              email: cfEmail,
+              message: (data.get("message") || "").trim()
+            });
           }
           cform.reset();
           cfStatus.textContent = "Sent — thanks. I'll get back to you soon.";
@@ -134,15 +145,15 @@
     var sectionObserver = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;
+        var sectionLabels = { top: "Hero", about: "About", work: "Work", contact: "Contact" };
         capture("section_viewed", {
           section: entry.target.id,
-          section_label: entry.target.querySelector(".sec-label") ?
-            entry.target.querySelector(".sec-label").textContent.trim() : entry.target.id
+          section_label: sectionLabels[entry.target.id] || entry.target.id
         });
         sectionObserver.unobserve(entry.target);
       });
     }, { threshold: 0.35 });
-    ["about", "work", "contact"].forEach(function (id) {
+    ["top", "about", "work", "contact"].forEach(function (id) {
       var section = document.getElementById(id);
       if (section) sectionObserver.observe(section);
     });
@@ -172,9 +183,12 @@
     var destination = link.getAttribute("href") || "";
 
     if (link.closest("#nav")) {
+      var navDestination = destination.replace(/^index\.html/, "") || "#top";
+      var navLinks = { "#top": "Home", "#about": "About", "#work": "Work", "#contact": "Contact" };
       capture("global_nav_clicked", {
+        link: navLinks[navDestination] || label,
         label: label,
-        destination: destination.replace(/^index\.html/, "") || "#top"
+        destination: navDestination
       });
     }
 
