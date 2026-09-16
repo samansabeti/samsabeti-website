@@ -292,3 +292,38 @@
   window.addEventListener("load", function () { layout(); parallax(); });
   parallax();
 })();
+
+
+/* Booking flow prototype — demo only, no real scheduling or payment */
+(() => {
+  const demo = document.querySelector('.booking-demo');
+  if (!demo) return;
+  const steps = [...demo.querySelectorAll('.booking-step')];
+  const progress = [...demo.querySelectorAll('.booking-demo__progress span')];
+  let step = 0;
+  const show = (next) => {
+    step = Math.max(0, Math.min(next, steps.length - 1));
+    steps.forEach((el, i) => el.classList.toggle('is-active', i === step));
+    progress.forEach((el, i) => el.classList.toggle('is-current', i === step));
+    demo.querySelector('.booking-demo__panel').scrollTop = 0;
+  };
+  const open = (kind) => {
+    demo.classList.add('is-open');
+    demo.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('has-booking-open');
+    show(0);
+    if (kind === 'fit') {
+      demo.querySelectorAll('.booking-demo__eyebrow')[0].textContent = '15-minute fit call · Free';
+    } else {
+      demo.querySelectorAll('.booking-demo__eyebrow')[0].textContent = '60-minute working session · $500';
+    }
+  };
+  const close = () => { demo.classList.remove('is-open'); demo.setAttribute('aria-hidden', 'true'); document.body.classList.remove('has-booking-open'); };
+  document.querySelectorAll('[data-booking]').forEach(el => el.addEventListener('click', e => { e.preventDefault(); open(el.dataset.booking); }));
+  demo.querySelectorAll('[data-next]').forEach(el => el.addEventListener('click', () => show(step + 1)));
+  demo.querySelectorAll('[data-back]').forEach(el => el.addEventListener('click', () => show(step - 1)));
+  demo.querySelectorAll('[data-close-booking]').forEach(el => el.addEventListener('click', close));
+  demo.querySelectorAll('.booking-days button').forEach(el => el.addEventListener('click', () => { demo.querySelectorAll('.booking-days button').forEach(x => x.classList.remove('is-selected')); el.classList.add('is-selected'); }));
+  demo.querySelectorAll('.booking-times button').forEach(el => el.addEventListener('click', () => { demo.querySelectorAll('.booking-times button').forEach(x => x.classList.remove('is-selected')); el.classList.add('is-selected'); }));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+})();
