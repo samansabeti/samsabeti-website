@@ -855,3 +855,125 @@ a { color: inherit; }
   .client__inner, .client__logo, .client__face--sub { transition: none; }
   .cform__input, .cform__send { transition: none; }
 }
+
+
+/* ============================================================
+   BOOK TIME — compact editorial offer rows
+   ============================================================ */
+
+#book { scroll-margin-top: 96px; }
+
+.book {
+  background: var(--bg);
+  padding-top: clamp(84px, 10vw, 132px);
+  padding-bottom: clamp(84px, 10vw, 132px);
+}
+
+.book__intro {
+  display: grid;
+  grid-template-columns: minmax(180px, .65fr) minmax(0, 1.35fr);
+  gap: clamp(28px, 7vw, 112px);
+  align-items: start;
+  padding-bottom: clamp(40px, 5vw, 64px);
+}
+
+.book__intro h2 {
+  font-size: clamp(1.85rem, 3.2vw, 2.7rem);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -.02em;
+}
+
+.book__intro p {
+  max-width: 35ch;
+  color: var(--ink-2);
+  font-size: clamp(1.08rem, 1.5vw, 1.24rem);
+  line-height: 1.62;
+}
+
+.book__offers { border-top: 1px solid var(--line); }
+
+.book__offer {
+  display: grid;
+  grid-template-columns: minmax(110px, .65fr) minmax(280px, 1.35fr) minmax(150px, .55fr);
+  gap: clamp(24px, 5vw, 80px);
+  align-items: start;
+  padding: clamp(30px, 4vw, 48px) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.book__duration {
+  padding-top: .22rem;
+  font-family: var(--sans);
+  font-size: .86rem;
+  color: var(--ink-2);
+}
+
+.book__copy h3 {
+  margin-bottom: .65rem;
+  font-size: 1.32rem;
+  font-weight: 560;
+  line-height: 1.25;
+  letter-spacing: -.01em;
+}
+
+.book__copy p {
+  max-width: 48ch;
+  color: var(--ink-2);
+  font-size: 1rem;
+  line-height: 1.62;
+}
+
+.book__action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1rem;
+  font-family: var(--sans);
+  text-align: right;
+}
+
+.book__action > span {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.book__action a {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 2px;
+  font-size: .9rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color .2s ease;
+}
+
+.book__action a span { font-size: .78rem; }
+
+@media (hover: hover) {
+  .book__action a:hover { color: var(--accent); }
+}
+
+@media (max-width: 720px) {
+  .book__intro { grid-template-columns: 1fr; gap: 18px; }
+  .book__intro p { max-width: 30ch; }
+  .book__offer {
+    grid-template-columns: 1fr auto;
+    gap: 12px 24px;
+  }
+  .book__duration { grid-column: 1 / -1; padding: 0; margin-bottom: 6px; }
+  .book__copy { grid-column: 1; }
+  .book__copy p { max-width: 27ch; }
+  .book__action { grid-column: 2; grid-row: 2; min-width: 96px; }
+}
+
+@media (max-width: 430px) {
+  .nav__links { gap: 14px; }
+  .nav__links a { font-size: .8rem; }
+  .book__offer { grid-template-columns: 1fr; gap: 0; }
+  .book__copy, .book__action { grid-column: 1; grid-row: auto; }
+  .book__copy p { max-width: none; }
+  .book__action { align-items: flex-start; text-align: left; margin-top: 1.4rem; gap: .65rem; }
+}
