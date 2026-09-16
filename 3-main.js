@@ -83,6 +83,7 @@
     var cfBtn = cform.querySelector(".cform__send");
     cform.addEventListener("submit", function (ev) {
       ev.preventDefault();
+      if (cfBtn.disabled) return;
       if (!cform.checkValidity()) {
         cfStatus.textContent = "Please fill in every field with a valid email.";
         cform.reportValidity();
@@ -105,7 +106,18 @@
           _honey: ""
         })
       }).then(function (res) {
-        if (res.ok) {
+        if (!res.ok) throw new Error("Contact service rejected the request");
+        return res.json();
+      }).then(function (result) {
+        if (!result || (result.success !== true && result.success !== "true")) {
+          throw new Error("Contact service did not confirm acceptance");
+        }
+
+        /* An analytics failure must never turn an accepted message into a retry. */
+        cform.reset();
+        cfStatus.textContent = "Sent — thanks. I'll get back to you soon.";
+        cfBtn.disabled = false;
+        try {
           if (window.posthog) {
             /* Link the submission to this visitor's profile: merges their anonymous
                session (source, sections viewed, device) into a person keyed by email. */
@@ -117,15 +129,14 @@
             window.posthog.capture('contact_form_submitted', {
               name: cfName,
               email: cfEmail,
-              message: (data.get("message") || "").trim()
+              message: (data.get("message") || "").trim(),
+              submission_status: "accepted",
+              instrumentation_version: 2
             });
           }
-          cform.reset();
-          cfStatus.textContent = "Sent — thanks. I'll get back to you soon.";
-        } else {
-          cfStatus.textContent = "Something went wrong — please try again.";
+        } catch (error) {
+          /* The message was accepted; analytics is best-effort. */
         }
-        cfBtn.disabled = false;
       }).catch(function () {
         cfStatus.textContent = "Couldn't send — please try again.";
         cfBtn.disabled = false;
@@ -135,29 +146,47 @@
 
   /* ---------- PostHog engagement tracking ---------- */
   function capture(eventName, properties) {
-    if (window.posthog && typeof window.posthog.capture === "function") {
-      window.posthog.capture(eventName, properties || {});
+    try {
+      if (window.posthog && typeof window.posthog.capture === "function") {
+        window.posthog.capture(eventName, properties || {});
+      }
+    } catch (error) {
+      /* Navigation and other site behaviour must work if analytics fails. */
     }
   }
 
-  /* Track the first meaningful view of each main section. */
-  if ("IntersectionObserver" in window) {
-    var sectionObserver = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (!entry.isIntersecting) return;
-        var sectionLabels = { top: "Hero", about: "About", work: "Work", contact: "Contact" };
-        capture("section_viewed", {
-          section: entry.target.id,
-          section_label: sectionLabels[entry.target.id] || entry.target.id
-        });
-        sectionObserver.unobserve(entry.target);
-      });
-    }, { threshold: 0.35 });
-    ["top", "about", "work", "contact"].forEach(function (id) {
+  /* A meaningful view fills 35% of the section OR viewport, whichever is smaller.
+     Capping by viewport height makes long mobile sections measurable. */
+  var sectionLabels = { top: "Hero", about: "About", work: "Work", contact: "Contact" };
+  var viewedSections = {};
+  var sectionsTicking = false;
+  function trackSectionViews() {
+    sectionsTicking = false;
+    var viewportHeight = window.innerHeight;
+    Object.keys(sectionLabels).forEach(function (id) {
+      if (viewedSections[id]) return;
       var section = document.getElementById(id);
-      if (section) sectionObserver.observe(section);
+      if (!section) return;
+      var rect = section.getBoundingClientRect();
+      var visibleHeight = Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0);
+      if (rect.height <= 0 || visibleHeight < Math.min(rect.height, viewportHeight) * 0.35) return;
+      viewedSections[id] = true;
+      capture("section_viewed", {
+        section: id,
+        section_label: sectionLabels[id],
+        instrumentation_version: 2
+      });
     });
   }
+  function scheduleSectionViews() {
+    if (sectionsTicking) return;
+    sectionsTicking = true;
+    requestAnimationFrame(trackSectionViews);
+  }
+  window.addEventListener("scroll", scheduleSectionViews, { passive: true });
+  window.addEventListener("resize", scheduleSectionViews);
+  window.addEventListener("load", scheduleSectionViews);
+  scheduleSectionViews();
 
   /* Track maximum scroll depth once at each threshold per page load. */
   var reachedDepths = {};
